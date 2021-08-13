@@ -1,0 +1,54 @@
+/*
+	Example: A tip calculation FIS (fuzzy inference system)
+	Calculates tip based on 'service' and 'food'
+
+									Pablo Cingolani 
+									pcingola@users.sourceforge.net
+*/
+
+FUNCTION_BLOCK tipper	// Block definition (there may be more than one block per file)
+
+VAR_INPUT				// Define input variables
+	valorAquisicao : REAL;
+	consumoRodoviario : REAL;
+END_VAR
+
+VAR_OUTPUT				// Define output variable
+	custoBeneficio : REAL;
+END_VAR
+
+FUZZIFY valorAquisicao			// Fuzzify input variable 'service': {'poor', 'good' , 'excellent'}
+	TERM vBaixo := (0, 1) (4, 0) ; 
+	TERM vMedio := (1, 0) (4,1) (6,1) (9,0);
+	TERM vAlto := (6, 0) (9, 1) (10, 1);
+END_FUZZIFY
+
+FUZZIFY consumoRodoviario			// Fuzzify input variable 'food': { 'rancid', 'delicious' }
+	TERM cBaixo := (0, 1) (4, 0) ; 
+	TERM cMedio := (1, 0) (4,1) (6,1) (9,0);
+	TERM cAlto := (6, 0) (9, 1) (10, 1);
+END_FUZZIFY
+
+DEFUZZIFY custoBeneficio			// Defuzzify output variable 'tip' : {'cheap', 'average', 'generous' }
+	TERM cbBaixo :=  (0,0) (5,1) (10,0); //igual a TRIAN 0 5 10;
+	TERM cbMedio := (10,0) (15,1) (20,0);
+	TERM cbAlto := (20,0) (25,1) (30,1);
+	METHOD : COG;		// Use 'Center Of Gravity' defuzzification method
+	DEFAULT := 0;		// Default value is 0 (if no rule activates defuzzifier)
+END_DEFUZZIFY
+
+RULEBLOCK No1	
+	RULE 1 : IF	valorAquisicao	IS	vBaixo	AND	consumoRodoviario	IS	cBaixo	THEN	custoBeneficio	IS	cbAlto;
+	RULE 2 : IF	valorAquisicao	IS	vBaixo	AND	consumoRodoviario	IS	cMedio	THEN	custoBeneficio	IS	cbMedio;
+	RULE 3 : IF	valorAquisicao	IS	vBaixo	AND	consumoRodoviario	IS	cAlto	THEN	custoBeneficio	IS	cbBaixo;
+	RULE 4 : IF	valorAquisicao	IS	vMedio	AND	consumoRodoviario	IS	cBaixo	THEN	custoBeneficio	IS	cbAlto;
+	RULE 5 : IF	valorAquisicao	IS	vMedio	AND	consumoRodoviario	IS	cMedio	THEN	custoBeneficio	IS	cbMedio;
+	RULE 5 : IF	valorAquisicao	IS	vMedio	AND	consumoRodoviario	IS	cAlto	THEN	custoBeneficio	IS	cbAlto;
+	RULE 6 : IF	valorAquisicao	IS	vAlto	AND	consumoRodoviario	IS	cBaixo	THEN	custoBeneficio	IS	cbMedio;
+	RULE 7 : IF	valorAquisicao	IS	vAlto	AND	consumoRodoviario	IS	cMedio	THEN	custoBeneficio	IS	cbMedio;
+	RULE 8 : IF	valorAquisicao	IS	vAlto	AND	consumoRodoviario	IS	cAlto	THEN	custoBeneficio	IS	cbAlto;
+	
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK
+
